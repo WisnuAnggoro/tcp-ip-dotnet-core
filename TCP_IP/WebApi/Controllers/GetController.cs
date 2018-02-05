@@ -16,7 +16,7 @@ namespace WebApi.Controllers
             _gpsOptions = optionAccessor.Value;
         }
 
-        [HttpGet]
+        [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
             try
@@ -27,16 +27,29 @@ namespace WebApi.Controllers
                     
                 LatLongGps gps = null;
 
-                double d0 = double.Parse(_gpsOptions.timestamp);
+                // double d0 = double.Parse(_gpsOptions.timestamp);
+                double d0;
+                if(id == 0)
+                    d0 = double.Parse(_gpsOptions.timestamp);
+                else
+                    d0 = double.Parse(_gpsOptions.timestamp_rover);
+
                 double d1 = System.DateTime.Now.GetUnixEpoch();
                 double diff = 10.0; // number of seconds different maximum
                 if((d1 - d0) < diff)
                 {
-                    gps = new LatLongGps()
-                    {
-                        latitude = _gpsOptions.latitude,
-                        longitude = _gpsOptions.longitude
-                    };
+                    if(id == 0)
+                        gps = new LatLongGps()
+                        {
+                            latitude = _gpsOptions.latitude,
+                            longitude = _gpsOptions.longitude
+                        };
+                    else
+                        gps = new LatLongGps()
+                        {
+                            latitude = _gpsOptions.latitude_rover,
+                            longitude = _gpsOptions.longitude_rover
+                        };
                 };
 
                 return Content(
