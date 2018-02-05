@@ -20,7 +20,11 @@ public partial class MainWindow : Gtk.Window
 	//private LatLongGps parkArea = new LatLongGps();
 	private double parkAreaLat = 0;
 	private double parkAreaLon = 0;
-    private bool isParkSetted = false; 
+    private double parkRadius = 0;
+    private bool isParkSetted = false;
+
+	private bool isParked = false;
+    private double parkingTime = 0;
 
     public MainWindow() : base(Gtk.WindowType.Toplevel)
     {
@@ -32,7 +36,8 @@ public partial class MainWindow : Gtk.Window
     {
 		Pango.FontDescription fontdesc = 
             Pango.FontDescription.FromString("Consolas 40");
-        lblAverageChokePosition.ModifyFont(fontdesc);
+		lblAverageChokePosition.ModifyFont(fontdesc);
+		lblParkingStatus.ModifyFont(fontdesc);
     }
 
     protected void OnDeleteEvent(object sender, DeleteEventArgs a)
@@ -52,7 +57,7 @@ public partial class MainWindow : Gtk.Window
             //https://www.movable-type.co.uk/scripts/latlong.html
 
             // Convert string to double
-   //         var p1_lat = double.Parse(p1.latitude);
+            //var p1_lat = double.Parse(p1.latitude);
 			//var p1_lon = double.Parse(p1.longitude);
 			//var p2_lat = double.Parse(p2.latitude);
 			//var p2_lon = double.Parse(p2.longitude);
@@ -83,7 +88,8 @@ public partial class MainWindow : Gtk.Window
 
     private bool SetParkArea(
         string lat,
-        string lon)
+        string lon,
+        string rad)
     {
         try
         {
@@ -95,6 +101,8 @@ public partial class MainWindow : Gtk.Window
             //    latitude = lat,
             //    longitude = lon
             //};
+
+            parkRadius = double.Parse(rad);
 
             return true;
 		}
@@ -117,6 +125,27 @@ public partial class MainWindow : Gtk.Window
         txtViewInfo.Buffer.Text += "\n";
         txtViewInfo.Buffer.Text += $"[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}]: ";
         txtViewInfo.Buffer.Text += line;
+	}
+
+	private void StartParking()
+	{
+        isParked = true;
+        parkingTime = 0;
+		// Every second call `update_status' (100 milliseconds)
+		GLib.Timeout.Add(10, new GLib.TimeoutHandler(CountParkingTime));
+	}
+
+    private bool CountParkingTime()
+    {
+        if (!isParked)
+            return isParked;
+
+        // Display parkTime
+        parkingTime += 0.01;
+        TimeSpan time = TimeSpan.FromSeconds(parkingTime);
+        lblParkingStatus.Text = $"PARKED [{time.ToString(@"hh\:mm\:ss\:ff")}]";
+
+        return isParked;
     }
 
 	private void StartCollecting()
@@ -127,15 +156,20 @@ public partial class MainWindow : Gtk.Window
 
     private bool CollectGpsData()
     {
-        if (!isContinueCollecting)
-            return isContinueCollecting;
+        //if (!isContinueCollecting)
+            //return isContinueCollecting;
 
-        // Find average of latitude and longitude points
-        double lat = latList.Average(d => d);
-        double lon = lonList.Average(d => d);
+		// Find average of latitude and longitude points
+		double lat = 0;
+		double lon = 0;
+        if (latList.Count() > 0 && lonList.Count() > 0)
+        {
+            lat = latList.Average(d => d);
+            lon = lonList.Average(d => d);
+        }
 
         // Display the points
-        lblAverageChokePosition.Text = $"{lat:F5}, {lon:F5}";
+        lblAverageChokePosition.Text = $"{lat:F7}, {lon:F7}";
 
 		// Clear the lists
 		latList.Clear();
@@ -148,16 +182,35 @@ public partial class MainWindow : Gtk.Window
                 parkAreaLat, parkAreaLon
             );
 
-            lblDistance.Text = $"{d}";
+            lblDistance.Text = $"Current distance: {d} meters";
+
+            if (d <= parkRadius)
+            {
+                if (!isParked)
+                    StartParking();
+            }
+            else
+            {
+                isParked = false;
+            }
+        }
+        else
+        {
+			TimeSpan time = TimeSpan.FromSeconds(parkingTime);
+			lblParkingStatus.Text = $"NOT PARKED [{time.ToString(@"hh\:mm\:ss\:ff")}]";
+
+            isParked = false;
         }
 
-        return isContinueCollecting;
+		//return isContinueCollecting;
+        return true;
     }
 
 	private void StartConnection()
 	{
 		// Every second call `ConnectToApi' (500 milliseconds)
 		GLib.Timeout.Add(500, new GLib.TimeoutHandler(ConnectToApi));
+		//GLib.Timeout.Add(500, new GLib.TimeoutHandler(ConnectToDevice));
 	}
 
     private bool ConnectToApi()
@@ -247,9 +300,12 @@ public partial class MainWindow : Gtk.Window
     {
         if (btnSetLocation.Label.Equals("Set Location"))
 		{
-            if(!SetParkArea(txtLatSetting.Text, txtLonSetting.Text))
+            if(!SetParkArea(
+                txtLatSetting.Text, 
+                txtLonSetting.Text,
+                txtRadius.Text))
             {
-                MessageBox.Show("Invalid Latitude or Longitude");
+                MessageBox.Show("Invalid Latitude or Longitude or Radius");
                 return;
             }
 			btnSetLocation.Label = "Unset Location";

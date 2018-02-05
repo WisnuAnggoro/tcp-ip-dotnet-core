@@ -59,6 +59,8 @@ public partial class MainWindow
 
 	private global::Gtk.Label lblDistance;
 
+	private global::Gtk.Label lblParkingStatus;
+
 	private global::Gtk.Label GtkLabel2;
 
 	protected virtual void Build()
@@ -287,12 +289,23 @@ public partial class MainWindow
 		// Container child vbox4.Gtk.Box+BoxChild
 		this.lblDistance = new global::Gtk.Label();
 		this.lblDistance.Name = "lblDistance";
-		this.lblDistance.LabelProp = global::Mono.Unix.Catalog.GetString("label17");
+		this.lblDistance.Ypad = 8;
+		this.lblDistance.LabelProp = global::Mono.Unix.Catalog.GetString("{init}");
 		this.vbox4.Add(this.lblDistance);
 		global::Gtk.Box.BoxChild w23 = ((global::Gtk.Box.BoxChild)(this.vbox4[this.lblDistance]));
 		w23.Position = 1;
 		w23.Expand = false;
 		w23.Fill = false;
+		// Container child vbox4.Gtk.Box+BoxChild
+		this.lblParkingStatus = new global::Gtk.Label();
+		this.lblParkingStatus.Name = "lblParkingStatus";
+		this.lblParkingStatus.Ypad = 29;
+		this.lblParkingStatus.LabelProp = global::Mono.Unix.Catalog.GetString("{init}");
+		this.vbox4.Add(this.lblParkingStatus);
+		global::Gtk.Box.BoxChild w24 = ((global::Gtk.Box.BoxChild)(this.vbox4[this.lblParkingStatus]));
+		w24.Position = 2;
+		w24.Expand = false;
+		w24.Fill = false;
 		this.GtkAlignment1.Add(this.vbox4);
 		this.frame2.Add(this.GtkAlignment1);
 		this.GtkLabel2 = new global::Gtk.Label();
@@ -303,9 +316,11 @@ public partial class MainWindow
 		this.GtkLabel2.UseMarkup = true;
 		this.frame2.LabelWidget = this.GtkLabel2;
 		this.vbox1.Add(this.frame2);
-		global::Gtk.Box.BoxChild w26 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.frame2]));
-		w26.Position = 1;
-		w26.Padding = ((uint)(2));
+		global::Gtk.Box.BoxChild w27 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.frame2]));
+		w27.Position = 1;
+		w27.Expand = false;
+		w27.Fill = false;
+		w27.Padding = ((uint)(2));
 		this.Add(this.vbox1);
 		if ((this.Child != null))
 		{
